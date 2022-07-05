@@ -1,0 +1,21 @@
+
+  {
+    "area":
+    [
+      {
+        "itemsArea" : "10"
+      },
+      {
+        "itemsArea" : "20"
+      },
+      {
+        "itemsArea" : "30"
+      },
+      {
+        "itemsArea" : "40"
+      },
+      {
+        "itemsArea" : "50"
+      }
+    ]
+  }
