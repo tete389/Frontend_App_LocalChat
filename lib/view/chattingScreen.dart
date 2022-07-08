@@ -19,98 +19,106 @@ class ChattingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: CustomTheme.white,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: CustomTheme.white,
+            ),
+            onPressed: () {
+              Get.back();
+            },
           ),
-          onPressed: () {
-            Get.back();
-          },
-        ),
-        title: Row(
-          children: <Widget>[
-            Container(
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                //borderRadius: const BorderRadius.all(Radius.circular(45)),
-                // border: Border.all(
-                //   width: 2,
-                //   color: CustomTheme.rust,
-                // ),
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.3)
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(45),
-                child: chatMessage.reactiveCrImg.value == "no data"
-                    ? const SizedBox(
-                        width: 40,
-                        height: 40,
-                        //color: CustomTheme.primaryTheme,
-                        child: Icon(
-                          FontAwesomeIcons.solidCommentDots,
-                          size: 30,
-                          color: CustomTheme.backGroundTheme,
+          title: Row(
+            children: <Widget>[
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                    //borderRadius: const BorderRadius.all(Radius.circular(45)),
+                    // border: Border.all(
+                    //   width: 2,
+                    //   color: CustomTheme.rust,
+                    // ),
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.3)),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(45),
+                  child: chatMessage.reactiveCrImg.value == "no data"
+                      ? const SizedBox(
+                          width: 40,
+                          height: 40,
+                          //color: CustomTheme.primaryTheme,
+                          child: Icon(
+                            FontAwesomeIcons.solidCommentDots,
+                            size: 30,
+                            color: CustomTheme.backGroundTheme,
+                          ),
+                        )
+                      : Image.network(
+                          '${ConfigImageUrl.imageChatRoom}${chatMessage.reactiveCrImg.value}',
+                          height: 40,
+                          width: 40,
+                          fit: BoxFit.cover,
                         ),
-                      )
-                    : Image.network(
-                        '${ConfigImageUrl.imageChatRoom}${chatMessage.reactiveCrImg.value}',
-                        height: 40,
-                        width: 40,
-                        fit: BoxFit.cover,
-                      ),
+                ),
               ),
-            ),
-            w15(),
-            Text(
-              chatMessage.reactiveCrName,
-            ),
-          ],
+              w15(),
+              Text(
+                chatMessage.reactiveCrName,
+              ),
+            ],
+          ),
+          backgroundColor: CustomTheme.primaryTheme,
         ),
-        backgroundColor: CustomTheme.primaryTheme,
-      ),
-      body: Obx(() {
-        late String str = "0";
-        return Column(
+        body: Column(
           children: [
             Expanded(
-              child: chatMessage.loading.value == "compile"
-                  ? GroupedListView<Result, DateTime>(
-                      padding: const EdgeInsets.all(8),
-                      reverse: true,
-                      order: GroupedListOrder.DESC,
-                      useStickyGroupSeparators: true,
-                      floatingHeader: true,
-                      elements: chatMessage.getChatMessage.result!,
-                      groupBy: (result) => dt(result),
-                      groupHeaderBuilder: (result) => groupHeader(result),
-                      itemBuilder: (context, result) {
-                        final bool isMe =
-                            (chatMessage.sendByMe == result.cmUserProfileId!);
-                        final bool isSameUser =
-                            (str == result.cmUserProfileId!);
-                        str = result.cmUserProfileId!;
+              child:
+              // Obx((){
+              //     return
+                    FutureBuilder(
+                      future: chatMessage.loadingChatMessage(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          late String str = "0";
+                          return GroupedListView<Result, DateTime>(
+                            padding: const EdgeInsets.all(8),
+                            reverse: true,
+                            order: GroupedListOrder.DESC,
+                            useStickyGroupSeparators: true,
+                            floatingHeader: true,
+                            elements: chatMessage.getChatMessage.result!,
+                            groupBy: (result) => dt(result),
+                            groupHeaderBuilder: (result) => groupHeader(result),
+                            itemBuilder: (context, result) {
+                              final bool isMe = (chatMessage.sendByMe ==
+                                  result.cmUserProfileId!);
+                              final bool isSameUser =
+                                  (str == result.cmUserProfileId!);
+                              str = result.cmUserProfileId!;
 
-                        return Padding(
-                          padding: !isSameUser
-                              ? const EdgeInsets.only(
-                                  bottom: 12,
-                                  left: 5,
-                                  right: 5,
-                                )
-                              : const EdgeInsets.only(left: 5, right: 5),
-                          child: isMe
-                              ? messageByMe(result, isSameUser)
-                              : messageByOther(result, isSameUser),
-                        );
-                      },
-                    )
-                  : mainLoading(CustomTheme.primaryTheme),
+                              return Padding(
+                                padding: !isSameUser
+                                    ? const EdgeInsets.only(
+                                        bottom: 12,
+                                        left: 5,
+                                        right: 5,
+                                      )
+                                    : const EdgeInsets.only(left: 5, right: 5),
+                                child: isMe
+                                    ? messageByMe(result, isSameUser)
+                                    : messageByOther(result, isSameUser),
+                              );
+                            },
+                          );
+                        }
+                        return mainLoading(CustomTheme.primaryTheme);
+                     // });
+                },
+              ),
             ),
 
-            // todo
+            /// todo
             /////// send message
             Container(
               color: Colors.grey.shade200,
@@ -128,9 +136,68 @@ class ChattingScreen extends StatelessWidget {
               ),
             ),
           ],
+        )
+
+        // Obx(() {
+        //   late String str = "0";
+        //   return Column(
+        //     children: [
+        //       Expanded(
+        //         child: chatMessage.loading.value == "compile"
+        //             ? GroupedListView<Result, DateTime>(
+        //                 padding: const EdgeInsets.all(8),
+        //                 reverse: true,
+        //                 order: GroupedListOrder.DESC,
+        //                 useStickyGroupSeparators: true,
+        //                 floatingHeader: true,
+        //                 elements: chatMessage.getChatMessage.result!,
+        //                 groupBy: (result) => dt(result),
+        //                 groupHeaderBuilder: (result) => groupHeader(result),
+        //                 itemBuilder: (context, result) {
+        //                   final bool isMe =
+        //                       (chatMessage.sendByMe == result.cmUserProfileId!);
+        //                   final bool isSameUser =
+        //                       (str == result.cmUserProfileId!);
+        //                   str = result.cmUserProfileId!;
+        //
+        //                   return Padding(
+        //                     padding: !isSameUser
+        //                         ? const EdgeInsets.only(
+        //                             bottom: 12,
+        //                             left: 5,
+        //                             right: 5,
+        //                           )
+        //                         : const EdgeInsets.only(left: 5, right: 5),
+        //                     child: isMe
+        //                         ? messageByMe(result, isSameUser)
+        //                         : messageByOther(result, isSameUser),
+        //                   );
+        //                 },
+        //               )
+        //             : mainLoading(CustomTheme.primaryTheme),
+        //       ),
+        //
+        //       // todo
+        //       /////// send message
+        //       Container(
+        //         color: Colors.grey.shade200,
+        //         child: TextField(
+        //           decoration: const InputDecoration(
+        //             contentPadding: EdgeInsets.all(12),
+        //             hintText: 'You message..',
+        //           ),
+        //           onSubmitted: (text) {
+        //             // final message = Result(
+        //             //   cmCreated: DateTime.now(),
+        //             //   cmUserProfileId:
+        //             // );
+        //           },
+        //         ),
+        //       ),
+        //     ],
+        //   );
+        // }),
         );
-      }),
-    );
   }
 
   Widget messageByOther(Result result, bool isSameUser) {

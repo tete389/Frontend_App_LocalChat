@@ -1,10 +1,14 @@
-
 import 'dart:convert';
+import 'dart:ffi';
+import 'dart:math';
 
 import 'package:frontend/models/chatRoomResponseModel.dart';
+import 'package:frontend/models/locationResponseModel.dart';
 import 'package:frontend/services/chatSearchService.dart';
+import 'package:geolocator/geoLocator.dart';
 import 'package:get/get.dart';
 
+import '../services/geolocatorService.dart';
 import 'chattingController.dart';
 import 'locationController.dart';
 
@@ -14,6 +18,8 @@ class ChatSearchController extends GetxController {
   ChatSearchService chatSearchService = ChatSearchService();
   late var getChatRoom = ChatRoomResponseModel();
   final location = Get.find<LocationController>();
+
+  GeoLocatorService geoLocatorService = GeoLocatorService();
 
   late final RxBool notFound = true.obs;
   final RxBool notConnectApi = true.obs;
@@ -26,8 +32,7 @@ class ChatSearchController extends GetxController {
   late List<String> locationInArea = [];
   //String crId = "no data";
   final RxList<bool> isToggleArea = [false, false, false, false, false].obs;
-
-
+  late Position? userLocation;
 
   @override
   void onInit() {
@@ -45,14 +50,14 @@ class ChatSearchController extends GetxController {
   }
 
   Future<void> toggleArea(int index) async {
-    if(!isToggleArea[index]){
+    if (!isToggleArea[index]) {
       for (int i = 0; i < isToggleArea.length; i++) {
         isToggleArea[i] = false;
       }
       isToggleArea[index] = true;
       locationInArea = [];
       update();
-      await getLocationInArea();
+      await getLocationInArea(index);
       await openAndCloseLoadingDialogChatSearch();
       update();
       return;
@@ -61,7 +66,7 @@ class ChatSearchController extends GetxController {
     update();
   }
 
-  infoChatMessage(String crId,String crName, String crImg)  {
+  infoChatMessage(String crId, String crName, String crImg) {
     _chatMessage.reactiveCrId = crId;
     _chatMessage.reactiveCrName = crName;
     _chatMessage.reactiveCrImg.value = crImg;
@@ -69,17 +74,51 @@ class ChatSearchController extends GetxController {
     _chatMessage.loadingChatMessage();
   }
 
-getLocationInArea() {
+  getLocationInArea(int index) async {
     print(location.getLocation.result!.length);
-    if(location.getLocation.result == null){
+    if (location.getLocation.result == null) {
       return;
     }
-    for(int i = 0 ; i < location.getLocation.result!.length ; i++){
-      locationInArea.add(location.getLocation.result![i].ldId!);
+
+    userLocation = await getUserLocation();
+    if (userLocation == null) {
+      return;
     }
-}
 
+    for(ResultLocation res in location.getLocation.result!){
+      double distanceCheck = calculateDistance(userLocation!.latitude, userLocation!.longitude, res.ldLatitude!, res.ldLongitude!);
+      print(res.ldName);
 
+      if(distanceCheck <= (index+1)/10 ){
+        locationInArea.add(res.ldId!);
+      }
+      print(distanceCheck);
+    }
+
+    // for (int i = 0; i < location.getLocation.result!.length; i++) {
+    //   locationInArea.add(location.getLocation.result![i].ldId!);
+    // }
+  }
+
+  Future<Position?> getUserLocation() async {
+    try {
+      return await geoLocatorService.getGeoLocation();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  double calculateDistance(
+      double userLat, double userLong, double ldLat, double ldLong) {
+    double distance = 0;
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 -
+        c((ldLat - userLat) * p) / 2 +
+        c(userLat * p) * c(ldLat * p) * (1 - c((ldLong - userLong) * p)) / 2;
+    distance = 12742 * asin(sqrt(a));
+    return distance ;
+  }
 
   Future<void> openAndCloseLoadingDialogChatSearch() async {
     searching('searching');
@@ -90,7 +129,8 @@ getLocationInArea() {
     //final callApi = Get.find<LocationService>();
     //var locationList = await callApi.getLocationCallApi();
 
-    var charRoomList = await chatSearchService.getChatRoomCallApi(locationInArea);
+    var charRoomList =
+        await chatSearchService.getChatRoomCallApi(locationInArea);
     if (chatSearchService.statusCode == 200) {
       // for (int i = 0; i < locationList['result'].length; i++) {
       getChatRoom = ChatRoomResponseModel.fromJson(charRoomList);
@@ -99,8 +139,7 @@ getLocationInArea() {
       searching('compile');
       //}
       print('${getChatRoom.resultChatRoom!.length}');
-    }else{
-
+    } else {
       notFound(true);
       notConnectApi(true);
     }
@@ -109,6 +148,5 @@ getLocationInArea() {
     //print('${ChatRoomResponseModel.fromJson(charRoomList).result?[0].crId}');
     //print('${locationList['result'][0]}');
     //print('${getChatRoom.result?[1].crId}');
-
   }
 }

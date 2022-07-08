@@ -1,7 +1,7 @@
 
 class ConfigHTTP {
   /// Url
-  static const String apiUrl = "http://192.168.4.140:8080";
+  static const String apiUrl = "http://192.168.43.90:8080";
 
   /// Page
   static const String pageUser = "/user";

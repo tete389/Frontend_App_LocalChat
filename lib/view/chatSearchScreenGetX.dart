@@ -1,6 +1,4 @@
-import 'dart:collection';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/controllers/chatSearchController.dart';
@@ -12,9 +10,7 @@ import 'package:frontend/view/profileScreenGetX.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 
-import '../controllers/chattingController.dart';
 import '../services/configs/configImageUrl.dart';
-import 'profileScreen.dart';
 import 'theme/customTheme.dart';
 import 'widgets/widget.dart';
 import 'widgets/widgetLoading.dart';

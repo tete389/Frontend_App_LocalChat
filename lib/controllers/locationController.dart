@@ -15,18 +15,14 @@ class LocationController extends GetxController {
   var getLocation = LocationResponseModel();
   LocationService locationService = LocationService();
   GeoLocatorService geoLocatorService = GeoLocatorService();
-
   final Completer<GoogleMapController> mapController = Completer();
-
   var tabIndex = 0.obs;
   final RxBool loading = false.obs;
   final RxString searchLocation = "not".obs;
   final RxString searchGeoLocation = "not".obs;
   var locationItem = [];
-
   late Marker marker;
   List<Marker> markers = <Marker>[].obs;
-
   late Position? userLocation;
 
   @override
@@ -121,6 +117,7 @@ class LocationController extends GetxController {
     if (locationService.statusCode == 200) {
       // for (int i = 0; i < locationList['result'].length; i++) {
       getLocation = LocationResponseModel.fromJson(locationList);
+      print(200);
       searchLocation('compile');
       await getMarkers();
       //}

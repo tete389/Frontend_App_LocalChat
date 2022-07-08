@@ -13,21 +13,22 @@ class MapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container()
-      // Obx(
-      //   () =>
-      //       GoogleMap(
-      //       mapType: MapType.normal,
-      //       onMapCreated: (GoogleMapController controller) {
-      //         location.mapController.complete(controller);
-      //       },
-      //       markers: Set<Marker>.of(location.markers),
-      //       myLocationEnabled:
-      //           location.searchGeoLocation.value == "compile" ? true : false,
-      //       initialCameraPosition: location.searchGeoLocation.value == "compile"
-      //           ? location.onCameraPosition()
-      //           : location.onCameraPositionDefault()),
-      // ),
+      body:
+      //Container()
+      Obx(
+        () =>
+            GoogleMap(
+            mapType: MapType.normal,
+            onMapCreated: (GoogleMapController controller) {
+              location.mapController.complete(controller);
+            },
+            markers: Set<Marker>.of(location.markers),
+            myLocationEnabled:
+                location.searchGeoLocation.value == "compile" ? true : false,
+            initialCameraPosition: location.searchGeoLocation.value == "compile"
+                ? location.onCameraPosition()
+                : location.onCameraPositionDefault()),
+      ),
     );
   }
 }

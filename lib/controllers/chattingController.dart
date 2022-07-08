@@ -30,6 +30,7 @@ class ChattingController extends GetxController {
   }
 
   Future<void> loadingChatMessage() async {
+    getChatMessage.result!.clear();
     resultIcon1.value = "0";
     resultIcon2.value = "0";
     count.value = 0;
